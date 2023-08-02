@@ -1,33 +1,42 @@
 {
-  "hash": "b7c7467f",
-  "browserHash": "e7310f96",
+  "hash": "d048c941",
+  "browserHash": "e888f674",
   "optimized": {
     "vue": {
       "src": "../../../../node_modules/vue/dist/vue.runtime.esm-bundler.js",
       "file": "vue.js",
-      "fileHash": "c7cc1e23",
+      "fileHash": "3e0e69c8",
       "needsInterop": false
     },
     "vitepress > @vue/devtools-api": {
       "src": "../../../../node_modules/@vue/devtools-api/lib/esm/index.js",
       "file": "vitepress___@vue_devtools-api.js",
-      "fileHash": "00449711",
+      "fileHash": "c3be687b",
       "needsInterop": false
     },
     "ndarray": {
       "src": "../../../../node_modules/ndarray/ndarray.js",
       "file": "ndarray.js",
-      "fileHash": "88066457",
+      "fileHash": "7e34776a",
       "needsInterop": true
     },
     "lodash": {
       "src": "../../../../node_modules/lodash/lodash.js",
       "file": "lodash.js",
-      "fileHash": "8a1de4d2",
+      "fileHash": "7e7a231c",
       "needsInterop": true
+    },
+    "@vueuse/core": {
+      "src": "../../../../node_modules/@vueuse/core/index.mjs",
+      "file": "@vueuse_core.js",
+      "fileHash": "fa3c79b5",
+      "needsInterop": false
     }
   },
   "chunks": {
+    "chunk-V634PGSD": {
+      "file": "chunk-V634PGSD.js"
+    },
     "chunk-76J2PTFD": {
       "file": "chunk-76J2PTFD.js"
     }
