@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Al qutub Invoice",
   description: "Invoice generator",
+  base: 'al-qutub',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

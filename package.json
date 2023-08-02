@@ -16,7 +16,6 @@
   },
   "postcss": {
     "plugins": {
-      "tailwindcss": {},
       "autoprefixer": {}
     }
   }
