@@ -15,6 +15,7 @@
             class="col"
           >
             <input
+              v-model="gridData[rowIdx][colIdx]"
               @change="
                 ($event) => evaluate($event.target.value, rowIdx, colIdx)
               "
@@ -259,7 +260,7 @@
 }
 .floating-input-boxes.customerName {
   top: 50.5mm;
-  left: 20mm; 
+  left: 20mm;
   width: 132mm;
 }
 
@@ -287,10 +288,22 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { withBase } from 'vitepress'
+import { withBase } from "vitepress";
+import * as _ from "lodash";
+
+import { watchDebounced } from '@vueuse/core'
 
 const rowsCount = ref(17);
 const colsCount = ref(11);
+
+const gridData = ref([]);
+for (let row = 0; row < rowsCount.value; row++) {
+  const rowValues = [];
+  for (let col = 0; col < colsCount.value; col++) {
+    rowValues.push("");
+  }
+  gridData.value.push(rowValues);
+}
 
 const floatingInputBoxes = ref([
   "customerTrn",
@@ -318,19 +331,47 @@ const form = ref({
   ExchangeRate: "",
 });
 
-const gridData = ref([]);
+function toNumberOrZero(num){
+  const val = _.toNumber(num)
+  if(_.isNaN(val)) {
+    return 0
+  }
+  return val
+}
 
 function evaluate(value, rowIdx, colIdx) {
   const rowData = gridData.value[rowIdx] ?? [];
   rowData[colIdx] = value.trim() ?? "";
+
+  if(colIdx >=2 && colIdx <=4){
+    const units = toNumberOrZero(rowData[2])
+    const unitPriceDhr = toNumberOrZero(rowData[3])
+    const unitPriceFils = _.round( (toNumberOrZero(rowData[4]) / 100), 2);
+
+    const unitPrice = unitPriceDhr + unitPriceFils;
+
+    if(units && unitPrice) {
+      const grossAmount = _.round(units * unitPrice, 2);
+      const grossAmountSplits = grossAmount.toFixed(2).split('.')
+      rowData[5] = grossAmountSplits[0]
+      rowData[6] = grossAmountSplits[1]
+
+      const taxAmount =  _.round(grossAmount * 5 / 100, 2)
+      const taxAmountSplits = taxAmount.toFixed(2).split('.')
+      rowData[7] = taxAmountSplits[0]
+      rowData[8] = taxAmountSplits[1]
+
+      const netAmount = _.round(grossAmount + taxAmount, 2)
+      const netAmountSplits = netAmount.toFixed(2).split('.')
+      rowData[9] = netAmountSplits[0]
+      rowData[10] = netAmountSplits[1]
+    }
+  }
+
   gridData.value[rowIdx] = rowData;
 }
 
-function sanitizeCents(value) {
-  round(4.006, 2)
-}
-
-function calculateAmount() {
+function calculateVerticalAmount() {
   const columnSums = new Array(colsCount.value).fill(0);
 
   for (let rowIdx = 0; rowIdx < rowsCount.value; rowIdx++) {
@@ -355,24 +396,25 @@ function calculateAmount() {
   return columnSums;
 }
 
-watch(
-  gridData,
-  (val) => {
-    console.log("grid updated", [...val]);
-    const sum = calculateAmount().slice(5);
-    const values = chunk(sum, 2);
-    const [grossPayable, taxPayable, invoiceValue] = values.map((v) => {
-      let floatValue = v[1] ?? 0;
-      floatValue = floatValue / 100;
-      console.log(v[0], floatValue);
-      return v[0] + floatValue;
-    });
 
-    console.log(grossPayable, taxPayable, invoiceValue);
-    form.value.grossPayable = grossPayable;
-    form.value.taxPayable = taxPayable;
-    form.value.invoiceValue = invoiceValue;
-  },
-  { deep: true }
-);
+function analyzeGridData() {
+  const sum = calculateVerticalAmount().slice(5);
+  const values = _.chunk(sum, 2);
+  const [grossPayable, taxPayable, invoiceValue] = values.map((v) => {
+    let floatValue = v[1] ?? 0;
+    floatValue = floatValue / 100;
+    return v[0] + floatValue;
+  });
+
+  // console.log(grossPayable, taxPayable, invoiceValue);
+  form.value.grossPayable = grossPayable;
+  form.value.taxPayable = taxPayable;
+  form.value.invoiceValue = invoiceValue;
+}
+
+watchDebounced(
+  gridData,
+  analyzeGridData,
+  { debounce: 500, maxWait: 1000 , deep: true }, 
+)
 </script>
